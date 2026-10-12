@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b18">
+  <title>PS5 Dashboard | SryModz</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b18;
+      --panel: #111a30;
+      --border: #29395f;
+      --blue: #4388ff;
+      --purple: #9065ff;
+      --text: #f4f6ff;
+      --muted: #a5b1d0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at top, #1a2b59, var(--bg) 65%);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      padding: 32px 16px;
+      text-align: center;
+      background: #0b1022cc;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-size: 12px;
+      letter-spacing: 5px;
+      font-weight: bold;
+      color: var(--blue);
+    }
+    h1 {
+      font-size: clamp(27px, 5vw, 42px);
+      margin: 14px 0 8px;
+    }
+    .subtitle { color: var(--muted); }
+    main {
+      max-width: 1000px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .value {
+      font-size: 19px;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: #342b4c;
+      color: #e2d5ff;
+      font-size: 12px;
+    }
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      margin: 6px 6px 6px 0;
+      background: linear-gradient(100deg, var(--blue), var(--purple));
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #222e4d;
+      border: 1px solid var(--border);
+    }
+    button:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 3px;
+    }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    #log {
+      background: #080d1c;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+      font: 13px/1.7 monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #bdcaff;
+    }
+    footer {
+      padding: 25px 15px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">SRYMODZ PROJECT</div>
+    <h1>PS5 DASHBOARD</h1>
+    <div class="subtitle">Console Diagnostics · Version 1.0</div>
+  </header>
+  <main>
+    <section class="panel">
+      <h2>Systemübersicht</h2>
+      <span class="badge" id="status">Dashboard gestartet</span>
+      <p class="note" id="message">
+        Bereit. Es liegen noch keine verifizierten Konsolendaten vor.
+      </p>
+      <button onclick="checkConnection()">Internet prüfen</button>
+      <button class="secondary" onclick="refreshDashboard()">
+        Status aktualisieren
+      </button>
+    </section>
+    <section class="grid">
+      <div class="panel">
+        <div class="label">Konsolenmodell</div>
+        <div class="value" id="model">Nicht verifiziert</div>
+      </div>
+      <div class="panel">
+        <div class="label">Systemsoftware</div>
+        <div class="value" id="firmware">Nicht verifiziert</div>
+      </div>
+      <div class="panel">
+        <div class="label">Jailbreak-Status</div>
+        <div class="value" id="jailbreak">Unbekannt</div>
+      </div>
+      <div class="panel">
+        <div class="label">Internetverbindung</div>
+        <div class="value" id="internet">Nicht geprüft</div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Diagnoseprotokoll</h2>
+      <div id="log">[INFO] SryModz Dashboard geladen.
+[INFO] Keine Konsolendaten erfunden.
+[INFO] Jailbreak-Status: unbekannt.</div>
+      <button class="secondary" onclick="clearLog()">
+        Protokoll leeren
+      </button>
+    </section>
+    <section class="panel">
+      <h2>Informationen</h2>
+      <p class="note">
+        Dieses Dashboard läuft im Browser und kann eine normale
+        Internetverbindung testen. Es hat keinen direkten Zugriff
+        auf die interne PS5-Systemsoftware.
+      </p>
+      <p class="note">
+        Firmware und Jailbreak-Status werden erst als bestätigt
+        angezeigt, wenn eine vertrauenswürdige, kompatible
+        Datenquelle diese Informationen bereitstellt.
+      </p>
+    </section>
+  </main>
+  <footer>
+    PS5 Dashboard by SryModz · Unofficial community project
+  </footer>
+  <script>
+    const $ = id => document.getElementById(id);
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      $("log").textContent +=
+        `\n[${time}] ${message}`;
+    }
+    function refreshDashboard() {
+      $("status").textContent = "Dashboard aktiv";
+      $("model").textContent = "Nicht verifiziert";
+      $("firmware").textContent = "Nicht verifiziert";
+      $("jailbreak").textContent = "Unbekannt";
+      $("message").textContent =
+        "Die Webseite läuft. Es ist keine echte PS5-Datenquelle verbunden.";
+      log("Dashboard aktualisiert.");
+      log("Systemdaten nicht verfügbar.");
+    }
+    async function checkConnection() {
+      $("internet").textContent = "Wird geprüft …";
+      $("status").textContent = "Verbindungstest läuft";
+      try {
+        const response = await fetch(
+          "https://www.gstatic.com/generate_204",
+          {
+            method: "GET",
+            cache: "no-store",
+            mode: "no-cors",
+            signal: AbortSignal.timeout(6000)
+          }
+        );
+        // Bei no-cors kann die Antwort nicht inhaltlich
+        // geprüft werden. Deshalb keinen sicheren Erfolg behaupten.
+        $("internet").textContent = "Anfrage gesendet";
+        $("status").textContent = "Test abgeschlossen";
+        $("message").textContent =
+          "Die Netzwerkanfrage wurde ausgelöst. Der Browser erlaubt " +
+          "keine vollständige Prüfung der Antwort.";
+        log("Netzwerktest ausgelöst; Antwort nicht verifiziert.");
+      } catch (error) {
+        $("internet").textContent = "Nicht bestätigt";
+        $("status").textContent = "Test fehlgeschlagen";
+        $("message").textContent =
+          "Der Browser konnte den Netzwerktest nicht abschließen.";
+        log("Netzwerktest fehlgeschlagen: " + error.message);
+      }
+    }
+    function clearLog() {
+      $("log").textContent = "[INFO] Protokoll geleert.";
+    }
+    refreshDashboard();
+  </script>
+</body>
+</html>
